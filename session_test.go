@@ -7,7 +7,6 @@ import (
 	"github.com/johansenj/goETS"
 	"net/http"
 	"net/http/httptest"
-	//"strings"
 	"testing"
 )
 
@@ -45,7 +44,8 @@ func Test_Session(t *testing.T) {
 	n.ServeHTTP(res, req)
 
 	res2 := httptest.NewRecorder()
-	req2, _ := http.NewRequest("GET", "/show", nil)
+	req2, _ := http.NewRequest("GET", "/testSession", nil)
+	fmt.Println(res.Header().Get("Session"))
 	req2.Header.Set("Session", res.Header().Get("Session"))
 	n.ServeHTTP(res2, req2)
 }

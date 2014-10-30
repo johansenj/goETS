@@ -11,9 +11,11 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"github.com/gorilla/context"
 	"io"
+	//	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -51,7 +53,6 @@ func NewSession(opt *Options) *Session {
 func (s *Session) ServeHTTP(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	//parse session string from header
 	rawSession := req.Header.Get("Session")
-
 	if rawSession == "" {
 		context.Set(req, CONTEXT_KEY, "")
 	} else {
@@ -84,11 +85,12 @@ func (s *Session) packHeader(sessionId string) string {
 	header := sessionId + ";" + string(encodedExpire)
 
 	encryptedHeader, ok := s.encryptSessionData([]byte(header))
+	str := base64.StdEncoding.EncodeToString(encryptedHeader)
 
 	if !ok {
 		return ""
 	}
-	return string(encryptedHeader)
+	return str
 }
 
 /*
@@ -99,22 +101,23 @@ func (s *Session) packHeader(sessionId string) string {
 func (s *Session) unpackHeader(encryptedHeader string) string {
 	var sessionExpire time.Time
 
-	header, ok := s.decryptSessionData([]byte(encryptedHeader))
+	data, err := base64.StdEncoding.DecodeString(encryptedHeader)
+	header, ok := s.decryptSessionData(data)
 	if !ok {
 		return ""
 	}
 
-	splitHeader := strings.SplitN(string(header), ";", 1)
+	rawHeader := string(header)
 
-	sessionId := splitHeader[0]
+	splitHeader := strings.SplitN(rawHeader, ";", 2)
 
-	err := sessionExpire.GobDecode([]byte(splitHeader[1]))
+	err = sessionExpire.GobDecode([]byte(splitHeader[1]))
 	if err != nil {
 		return ""
 	}
 
 	if time.Now().Before(sessionExpire) {
-		return sessionId
+		return splitHeader[0] //session id
 	} else {
 		return ""
 	}
@@ -125,8 +128,6 @@ func (s *Session) unpackHeader(encryptedHeader string) string {
 // Returns the encrypted session header.
 */
 func (s *Session) encryptSessionData(session_header []byte) ([]byte, bool) {
-
-	var rawCrypt []byte
 
 	c, err := aes.NewCipher(s.config.CryptKey)
 	if err != nil {
@@ -143,7 +144,7 @@ func (s *Session) encryptSessionData(session_header []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	gcm.Seal(rawCrypt, iv, session_header, nil)
+	rawCrypt := gcm.Seal(nil, iv, session_header, nil)
 
 	return append(iv, rawCrypt...), true
 }
@@ -153,7 +154,7 @@ func (s *Session) encryptSessionData(session_header []byte) ([]byte, bool) {
 // Returns the plaintext session header.
 */
 func (s *Session) decryptSessionData(crypted_session_id []byte) ([]byte, bool) {
-	var plainText []byte
+	//var plainText []byte
 
 	c, err := aes.NewCipher(s.config.CryptKey)
 	if err != nil {
@@ -170,8 +171,14 @@ func (s *Session) decryptSessionData(crypted_session_id []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	gcm.Open(plainText, crypted_session_id[:nonceSize], crypted_session_id[nonceSize:], nil)
-	return plainText, true
+	cryptText := crypted_session_id[nonceSize:]
+	iv := crypted_session_id[:nonceSize]
+
+	cleartext, err := gcm.Open(nil, iv, cryptText, nil)
+	if err != nil {
+		panic(err)
+	}
+	return cleartext, true
 }
 
 /*
