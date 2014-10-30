@@ -62,7 +62,7 @@ func (s *Session) ServeHTTP(w http.ResponseWriter, req *http.Request, next http.
 	next(w, req)
 
 	// set session string to header
-	w.Header().Add("Session", s.packHeader(string(context.Get(req, "session_id").(string))))
+	w.Header().Add("Session", s.packHeader(string(context.Get(req, CONTEXT_KEY).(string))))
 
 	// context cleanup
 	context.Clear(req)

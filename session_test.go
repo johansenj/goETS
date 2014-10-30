@@ -7,7 +7,7 @@ import (
 	"github.com/johansenj/goETS"
 	"net/http"
 	"net/http/httptest"
-	"strings"
+	//"strings"
 	"testing"
 )
 
@@ -28,11 +28,26 @@ func Test_Session(t *testing.T) {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/set", func(w http.ResponseWriter, req *http.Request) {
+		context.Set(req, session.CONTEXT_KEY, "1")
+	})
 
+	mux.HandleFunc("/testSession", func(w http.ResponseWriter, req *http.Request) {
+		sesStr := context.Get(req, session.CONTEXT_KEY).(string)
+		if sesStr != "1" {
+			t.Error("session did not comeback correctly")
+		}
 	})
 
 	n.UseHandler(mux)
 
+	res := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/set", nil)
+	n.ServeHTTP(res, req)
+
+	res2 := httptest.NewRecorder()
+	req2, _ := http.NewRequest("GET", "/show", nil)
+	req2.Header.Set("Session", res.Header().Get("Session"))
+	n.ServeHTTP(res2, req2)
 }
 
 func Test_ClearSession(t *testing.T) {
