@@ -1,7 +1,6 @@
 package session_test
 
 import (
-	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/context"
 	"github.com/johansenj/goETS"
@@ -45,7 +44,6 @@ func Test_Session(t *testing.T) {
 
 	res2 := httptest.NewRecorder()
 	req2, _ := http.NewRequest("GET", "/testSession", nil)
-	fmt.Println(res.Header().Get("Session"))
 	req2.Header.Set("Session", res.Header().Get("Session"))
 	n.ServeHTTP(res2, req2)
 }
