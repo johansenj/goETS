@@ -44,11 +44,11 @@ func NewSession(opt *Options) *Session {
 }
 
 /*
-// ServerHTTP returns a http server handeler for the middleware which handles the
+// ServeHTTP returns a http server handeler for the middleware which handles the
 // session data and stores the session id in the context.
 // Returns the middleware handler after session setup.
 */
-func (s *Session) ServerHTTP(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+func (s *Session) ServeHTTP(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	//parse session string from header
 	rawSession := req.Header.Get("Session")
 

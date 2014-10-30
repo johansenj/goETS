@@ -3,6 +3,7 @@ package session_test
 import (
 	"fmt"
 	"github.com/codegangsta/negroni"
+	"github.com/gorilla/context"
 	"github.com/johansenj/goETS"
 	"net/http"
 	"net/http/httptest"
@@ -10,11 +11,27 @@ import (
 	"testing"
 )
 
-const validKey []byte = []byte("")
-const invalidKey []byte = []byte("secret")
-const blankKey []byte = []byte("")
+var validKey []byte = []byte("n+D+LpWrHpjzhe4HyPdALAbwrB4vk1WV")
+var invalidKey []byte = []byte("secret")
+var blankKey []byte = []byte("")
 
 func Test_Session(t *testing.T) {
+	var sOpt = new(session.Options)
+
+	sOpt.MaxAge = 10000
+	sOpt.CryptKey = validKey
+
+	n := negroni.Classic()
+
+	n.Use(session.NewSession(sOpt))
+
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/set", func(w http.ResponseWriter, req *http.Request) {
+
+	})
+
+	n.UseHandler(mux)
 
 }
 
