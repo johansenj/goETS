@@ -74,6 +74,10 @@ func (s *Session) ServeHTTP(w http.ResponseWriter, req *http.Request, next http.
 // Returns the encrypted header
 */
 func (s *Session) packHeader(sessionId string) string {
+	if sessionId == "" {
+		return ""
+	}
+
 	sessionDuration := time.Duration(s.config.MaxAge) * time.Second
 	sessionExpire := time.Now().Add(sessionDuration)
 
