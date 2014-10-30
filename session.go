@@ -12,7 +12,6 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"fmt"
-	"github.com/codegangsta/negroni"
 	"github.com/gorilla/context"
 	"io"
 	"net/http"
@@ -29,7 +28,6 @@ const nonceSize = 24
 
 type Options struct {
 	MaxAge   int64
-	Secure   bool
 	CryptKey []byte
 }
 
@@ -50,7 +48,7 @@ func NewSession(opt *Options) *Session {
 // session data and stores the session id in the context.
 // Returns the middleware handler after session setup.
 */
-func (s *Session) ServerHTTP(w http.ResponseWriter, req *http.Request, next http.HandleFunc) {
+func (s *Session) ServerHTTP(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	//parse session string from header
 	rawSession := req.Header.Get("Session")
 
@@ -64,7 +62,7 @@ func (s *Session) ServerHTTP(w http.ResponseWriter, req *http.Request, next http
 	next(w, req)
 
 	// set session string to header
-	w.Header().Add("Session", s.packHeader(string(context.Get(req, "session_id"))))
+	w.Header().Add("Session", s.packHeader(string(context.Get(req, "session_id").(string))))
 
 	// context cleanup
 	context.Clear(req)
@@ -75,7 +73,7 @@ func (s *Session) ServerHTTP(w http.ResponseWriter, req *http.Request, next http
 // Returns the encrypted header
 */
 func (s *Session) packHeader(sessionId string) string {
-	sessionDuration := time.Duration(config.MaxAge) * time.Second
+	sessionDuration := time.Duration(s.config.MaxAge) * time.Second
 	sessionExpire := time.Now().Add(sessionDuration)
 
 	encodedExpire, err := sessionExpire.GobEncode()
@@ -101,7 +99,7 @@ func (s *Session) packHeader(sessionId string) string {
 func (s *Session) unpackHeader(encryptedHeader string) string {
 	var sessionExpire time.Time
 
-	header, ok := s.decryptSessionData(encryptedHeader)
+	header, ok := s.decryptSessionData([]byte(encryptedHeader))
 	if !ok {
 		return ""
 	}
@@ -110,7 +108,7 @@ func (s *Session) unpackHeader(encryptedHeader string) string {
 
 	sessionId := splitHeader[0]
 
-	err := sessionExpire.GobDecode(byte(splitHeader[1]))
+	err := sessionExpire.GobDecode([]byte(splitHeader[1]))
 	if err != nil {
 		return ""
 	}
