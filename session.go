@@ -1,9 +1,8 @@
 /*
-  session is used to keep track of the users session and the session id can be
-  retrieved and set via the context package using the CONTEXT_KEY
-
-  the session is encrypted and thus verified via unencryption	use of GCM cipher
-  used for authenticity check
+  goETS is a session management middleware that does not require a database call to
+  check the session and implements the Encrypted Token Pattern helping prevent CSRF.
+  More information about the Encypted Token Pattern can be found at:
+  (https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Encrypted_Token_Pattern).
 */
 package session
 
@@ -38,7 +37,7 @@ type Session struct {
 }
 
 /*
-   NewSession is used int the creation of the Negroni middleware
+   NewSession is used in the creation of the Negroni middleware
 */
 func NewSession(opt *Options) *Session {
 	if opt == nil || opt.CryptKey == nil || len(opt.CryptKey) != KeySize {
