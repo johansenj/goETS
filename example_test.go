@@ -33,6 +33,7 @@ func ExampleSession_negroniMiddleware() {
 
 	mux.HandleFunc("/getSession", func(w http.ResponseWriter, req *http.Request) {
 		// Retrieving the session unique identifier
-		sesStr := context.Get(req, session.CONTEXT_KEY).(string)
+		_ = context.Get(req, session.CONTEXT_KEY).(string)
+
 	})
 }
