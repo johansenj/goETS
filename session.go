@@ -1,9 +1,9 @@
 /*
-// session is used to keep track of the users session and the session id can be
-// retrieved and set via the context package using the CONTEXT_KEY
-//
-// the session is encrypted and thus verified via unencryption	 use of GCM cipher
-// used for authenticity check
+  session is used to keep track of the users session and the session id can be
+  retrieved and set via the context package using the CONTEXT_KEY
+
+  the session is encrypted and thus verified via unencryption	use of GCM cipher
+  used for authenticity check
 */
 package session
 
@@ -37,7 +37,9 @@ type Session struct {
 	config *Options
 }
 
-// Middleware is a struct that has a ServeHTTP method
+/*
+   NewSession is used int the creation of the Negroni middleware
+*/
 func NewSession(opt *Options) *Session {
 	if opt == nil || opt.CryptKey == nil || len(opt.CryptKey) != KeySize {
 		panic(fmt.Sprintln("Missing key or key is incorrect size"))
@@ -46,9 +48,8 @@ func NewSession(opt *Options) *Session {
 }
 
 /*
-// ServeHTTP returns a http server handeler for the middleware which handles the
-// session data and stores the session id in the context.
-// Returns the middleware handler after session setup.
+   ServeHTTP is a http server handeler for the middleware which handles the
+   session data and stores the session id in the context.
 */
 func (s *Session) ServeHTTP(w http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	//parse session string from header
@@ -70,8 +71,8 @@ func (s *Session) ServeHTTP(w http.ResponseWriter, req *http.Request, next http.
 }
 
 /*
-// packHeader combines the session id along with when the session is to expires.
-// Returns the encrypted header
+   packHeader combines the session id along with when the session is to expires.
+   Returns the encrypted header
 */
 func (s *Session) packHeader(sessionId string) string {
 	if sessionId == "" {
@@ -98,9 +99,9 @@ func (s *Session) packHeader(sessionId string) string {
 }
 
 /*
-// unpackHeader parses the encrypted header checks to make sure the session
-// expiration has not passed.
-// Returns the session id
+   unpackHeader parses the encrypted header checks to make sure the session
+   expiration has not passed.
+   Returns the session id
 */
 func (s *Session) unpackHeader(encryptedHeader string) string {
 	var sessionExpire time.Time
@@ -128,8 +129,8 @@ func (s *Session) unpackHeader(encryptedHeader string) string {
 }
 
 /*
-// encryptSessionData encrypts the session header.
-// Returns the encrypted session header.
+   encryptSessionData encrypts the session header.
+   Returns the encrypted session header.
 */
 func (s *Session) encryptSessionData(session_header []byte) ([]byte, bool) {
 
@@ -154,8 +155,8 @@ func (s *Session) encryptSessionData(session_header []byte) ([]byte, bool) {
 }
 
 /*
-// decryptSessionData decrypts the session header.
-// Returns the plaintext session header.
+   decryptSessionData decrypts the session header.
+   Returns the plaintext session header.
 */
 func (s *Session) decryptSessionData(crypted_session_id []byte) ([]byte, bool) {
 	//var plainText []byte
@@ -186,7 +187,7 @@ func (s *Session) decryptSessionData(crypted_session_id []byte) ([]byte, bool) {
 }
 
 /*
-// randBytes gets random bytes to for use in IV
+   randBytes gets random bytes to for use in IV
 */
 func randBytes(size int) []byte {
 	p := make([]byte, size)

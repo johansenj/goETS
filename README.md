@@ -1,4 +1,24 @@
-GO Encrypted Token Session
-==========================
+# GO Encrypted Token Session
 
-Encrypted Token Session middleware written a Negroni middleware handler.
+goETS is an implementation of the Encrypted Token Paturn Session written for 
+Negroni middleware.
+
+## Usage
+
+### Options
+
+## Examples
+### General Example
+~~~ go
+
+~~~
+
+### Setting Session
+~~~ go
+
+~~~
+
+### Clearing Session
+~~~ go
+
+~~~
